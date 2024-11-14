@@ -54,16 +54,14 @@ export const Home = () => {
 
     setLoading(true);
 
-    setTimeout(() => {
-      const resultadoSorteio = realizarSorteio(participantes);
-      if (resultadoSorteio) {
-        setError(null);
-        enviarEmails(resultadoSorteio);
-      } else {
-        setError("Não foi possível realizar o sorteio. Tente novamente.");
-      }
+    const resultadoSorteio = realizarSorteio(participantes);
+    if (resultadoSorteio) {
+      setError(null);
+      enviarEmails(resultadoSorteio);
+    } else {
+      setError("Não foi possível realizar o sorteio. Tente novamente.");
       setLoading(false);
-    }, 2000);
+    }
   };
 
   const shuffleArray = (array: Participante[]): Participante[] => {

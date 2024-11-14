@@ -6,8 +6,8 @@ export const RouterComponent = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<FirstVersion />} />
-        <Route path="/email" element={<Home />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/v0" element={<FirstVersion />} />
       </Routes>
     </Router>
   );
