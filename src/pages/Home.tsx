@@ -6,79 +6,122 @@ interface Participante {
   email: string;
 }
 
+interface ResultadoSorteio {
+  participante: string;
+  participanteEmail: string;
+  amigoSecreto: string;
+  amigoSecretoEmail: string;
+}
+
 export const Home = () => {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [participantes, setParticipantes] = useState<Participante[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
   const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-  useEffect(() => emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY), []);
+  useEffect(() => emailjs.init(publicKey), [publicKey]);
+
+  const emailValido = (email: string): boolean =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const adicionarParticipante = () => {
-    if (nome && email) {
-      setParticipantes([...participantes, { nome, email }]);
-      setNome("");
-      setEmail("");
-    } else {
-      alert("Por favor, preencha ambos os campos.");
+    if (!nome || !email) {
+      return setError("Por favor, preencha ambos os campos.");
     }
+    if (!emailValido(email)) {
+      return setError("Por favor, insira um email válido.");
+    }
+    if (participantes.some((p) => p.email === email)) {
+      return setError("Esse participante já foi adicionado.");
+    }
+
+    setParticipantes((prev) => [...prev, { nome, email }]);
+    setNome("");
+    setEmail("");
+    setError(null);
   };
 
   const sortear = () => {
     if (participantes.length < 2) {
-      alert("É necessário pelo menos 2 participantes para sortear.");
-      return;
+      return setError("É necessário pelo menos 2 participantes para sortear.");
     }
 
-    let sorteio = [...participantes];
-    sorteio = shuffleArray(sorteio);
+    setLoading(true);
 
-    for (let i = 0; i < participantes.length; i++) {
-      const amigoSecreto = sorteio[(i + 1) % participantes.length];
-      enviarEmail(participantes[i], amigoSecreto);
-    }
-
-    alert("Os e-mails foram enviados com sucesso!");
-  };
-
-  const shuffleArray = (array: Participante[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  };
-
-  const enviarEmail = (
-    participante: Participante,
-    amigoSecreto: Participante
-  ) => {
-    const templateParams = {
-      to_name: participante.nome,
-      to_email: participante.email,
-      from_year: new Date().getFullYear(),
-      secret_friend: amigoSecreto.nome,
-    };
-
-    emailjs.send(serviceId, templateId, templateParams).then(
-      (response) => {
-        console.log(
-          "E-mail enviado com sucesso!",
-          response.status,
-          response.text
-        );
-      },
-      (error) => {
-        console.error("Erro ao enviar e-mail:", error);
+    setTimeout(() => {
+      const resultadoSorteio = realizarSorteio(participantes);
+      if (resultadoSorteio) {
+        setError(null);
+        enviarEmails(resultadoSorteio);
+      } else {
+        setError("Não foi possível realizar o sorteio. Tente novamente.");
       }
-    );
+      setLoading(false);
+    }, 2000);
+  };
+
+  const shuffleArray = (array: Participante[]): Participante[] => {
+    const arrayCopiado = [...array];
+    for (let i = arrayCopiado.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arrayCopiado[i], arrayCopiado[j]] = [arrayCopiado[j], arrayCopiado[i]];
+    }
+    return arrayCopiado;
+  };
+
+  const realizarSorteio = (
+    participantes: Participante[]
+  ): ResultadoSorteio[] | null => {
+    let sorteio: Participante[];
+    let valido = false;
+
+    while (!valido) {
+      sorteio = shuffleArray(participantes);
+      valido = participantes.every(
+        (participante, index) => participante.email !== sorteio[index].email
+      );
+    }
+
+    return participantes.map((participante, index) => ({
+      participante: participante.nome,
+      participanteEmail: participante.email,
+      amigoSecreto: sorteio[index].nome,
+      amigoSecretoEmail: sorteio[index].email,
+    }));
+  };
+
+  const enviarEmails = async (resultados: ResultadoSorteio[]) => {
+    try {
+      for (const resultado of resultados) {
+        const templateParams = {
+          to_name: resultado.participante,
+          to_email: resultado.participanteEmail,
+          from_year: new Date().getFullYear(),
+          secret_friend: resultado.amigoSecreto,
+        };
+
+        await emailjs.send(serviceId, templateId, templateParams);
+      }
+      setSuccess("Emails enviados com sucesso!");
+    } catch (error) {
+      console.error("Erro ao enviar emails:", error);
+      setError("Erro ao enviar emails. Tente novamente.");
+    } finally {
+      setLoading(false);
+      setParticipantes([]);
+    }
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Sorteador de Amigo Secreto</h1>
+
       <div className="mb-4">
         <input
           type="text"
@@ -101,6 +144,9 @@ export const Home = () => {
           Adicionar Participante
         </button>
       </div>
+
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+
       <ul className="mb-4">
         {participantes.map((participante, index) => (
           <li key={index} className="mb-2">
@@ -108,12 +154,16 @@ export const Home = () => {
           </li>
         ))}
       </ul>
+
       <button
         onClick={sortear}
         className="bg-green-500 text-white p-2 rounded mb-4"
       >
-        Sortear
+        {loading ? "Sorteando..." : "Sortear"}
       </button>
+
+      <br />
+      {success && <div className="text-green-500 mb-4">{success}</div>}
     </div>
   );
 };
