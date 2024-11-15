@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import emailjs from "@emailjs/browser";
-
-interface Participante {
-  nome: string;
-  email: string;
-}
-
-interface ResultadoSorteio {
-  participante: string;
-  participanteEmail: string;
-  amigoSecreto: string;
-  amigoSecretoEmail: string;
-}
+import { Participante, ResultadoSorteio, Sorteio } from "../@types";
+import {
+  EMAILJS_PUBLIC_KEY,
+  EMAILJS_SERVICE_ID,
+  EMAILJS_TEMPLATE_ID,
+} from "../constants/email";
 
 export const Home = () => {
   const [nome, setNome] = useState("");
@@ -20,12 +15,15 @@ export const Home = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [temSorteios, setTemSorteios] = useState(false);
 
-  const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-  const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-  const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-  useEffect(() => emailjs.init(publicKey), [publicKey]);
+  useEffect(() => {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    const savedSorteios = localStorage.getItem("sorteios");
+    if (savedSorteios && JSON.parse(savedSorteios).length > 0) {
+      setTemSorteios(true);
+    }
+  }, []);
 
   const emailValido = (email: string): boolean =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -54,14 +52,26 @@ export const Home = () => {
 
     setLoading(true);
 
-    const resultadoSorteio = realizarSorteio(participantes);
-    if (resultadoSorteio) {
+    const resultado = realizarSorteio(participantes);
+    if (resultado) {
+      const data = new Date().toISOString();
+      const novoSorteio = { data, resultados: resultado };
       setError(null);
-      enviarEmails(resultadoSorteio);
+      salvarSorteio(novoSorteio);
+      enviarEmails(resultado);
     } else {
       setError("Não foi possível realizar o sorteio. Tente novamente.");
       setLoading(false);
     }
+  };
+
+  const salvarSorteio = (novoSorteio: Sorteio) => {
+    const sorteios = JSON.parse(localStorage.getItem("sorteios") || "[]");
+    sorteios.push(novoSorteio);
+    localStorage.setItem("sorteios", JSON.stringify(sorteios));
+    setSuccess("Sorteio realizado e salvo com sucesso!");
+    setLoading(false);
+    setTemSorteios(true);
   };
 
   const shuffleArray = (array: Participante[]): Participante[] => {
@@ -104,7 +114,11 @@ export const Home = () => {
           secret_friend: resultado.amigoSecreto,
         };
 
-        await emailjs.send(serviceId, templateId, templateParams);
+        await emailjs.send(
+          EMAILJS_SERVICE_ID,
+          EMAILJS_TEMPLATE_ID,
+          templateParams
+        );
       }
       setSuccess("Emails enviados com sucesso!");
     } catch (error) {
@@ -112,7 +126,6 @@ export const Home = () => {
       setError("Erro ao enviar emails. Tente novamente.");
     } finally {
       setLoading(false);
-      setParticipantes([]);
     }
   };
 
@@ -160,8 +173,14 @@ export const Home = () => {
         {loading ? "Sorteando..." : "Sortear"}
       </button>
 
-      <br />
       {success && <div className="text-green-500 mb-4">{success}</div>}
+
+      <br />
+      {temSorteios && (
+        <Link to="/historico" className="text-blue-500 underline">
+          Ver Histórico de Sorteios
+        </Link>
+      )}
     </div>
   );
 };
