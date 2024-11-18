@@ -1,50 +1,87 @@
-# React + TypeScript + Vite
+# Sorteador de Amigo Secreto
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este é um projeto de sorteador de amigo secreto desenvolvido com React, TypeScript e Vite. Ele permite adicionar participantes, realizar o sorteio e enviar emails com os resultados utilizando a biblioteca EmailJS.
 
-Currently, two official plugins are available:
+## Pré-requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js (versão 14 ou superior)
+- npm (versão 6 ou superior) ou yarn (versão 1.22 ou superior)
 
-## Expanding the ESLint configuration
+## Instalação
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. Clone o repositório:
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```sh
+git clone https://github.com/seu-usuario/sorteador-amigo-secreto.git
+cd sorteador-amigo-secreto
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. Instale as dependências:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```sh
+npm install
+# ou
+yarn install
 ```
+
+## Configuração
+
+### EmailJS
+
+Para configurar o envio de emails, você precisará de uma conta no EmailJS. Siga os passos abaixo para configurar:
+
+1. Crie uma conta no EmailJS.
+2. Crie um novo serviço de email e anote o Service ID.
+3. Crie um novo template de email e anote o Template ID.
+4. Vá para a seção de integrações e anote o Public Key.
+
+### Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto e adicione as seguintes variáveis de ambiente com os valores obtidos no EmailJS:
+
+```sh
+VITE_EMAILJS_SERVICE_ID=seu_service_id
+VITE_EMAILJS_TEMPLATE_ID=seu_template_id
+VITE_EMAILJS_PUBLIC_KEY=sua_public_key
+```
+
+## Uso
+
+1. Inicie o servidor de desenvolvimento:
+
+```sh
+npm run dev
+# ou
+yarn dev
+```
+
+2. Abra o navegador e acesse [http://localhost:5173](http://localhost:5173).
+
+## Scripts Disponíveis
+
+- `dev`: Inicia o servidor de desenvolvimento.
+- `build`: Compila o projeto para produção.
+- `lint`: Executa o linter (ESLint).
+- `preview`: Visualiza a versão de produção.
+
+## Estrutura do Projeto
+
+- `src/`: Contém o código-fonte do projeto.
+  - `@types/`: Tipos TypeScript utilizados no projeto.
+  - `assets/`: Arquivos estáticos.
+  - `constants/`: Constantes utilizadas no projeto.
+  - `pages/`: Páginas da aplicação.
+  - `router/`: Configuração das rotas.
+- `public/`: Arquivos públicos.
+- `index.html`: Arquivo HTML principal.
+- `tailwind.config.js`: Configuração do Tailwind CSS.
+- `tsconfig.json`: Configuração do TypeScript.
+- `vite.config.ts`: Configuração do Vite.
+
+## Contribuição
+
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
