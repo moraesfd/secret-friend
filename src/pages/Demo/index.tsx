@@ -21,7 +21,7 @@ const emailValido = (email: string): boolean => {
   return regex.test(email);
 };
 
-export const FirstVersion = () => {
+export const Demo = () => {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [participantes, setParticipantes] =

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import emailjs from "@emailjs/browser";
-import { Participante, ResultadoSorteio, Sorteio } from "../@types";
+import { Participante, ResultadoSorteio, Sorteio } from "../../@types";
 import {
   EMAILJS_PUBLIC_KEY,
   EMAILJS_SERVICE_ID,
   EMAILJS_TEMPLATE_ID,
-} from "../constants/email";
+} from "../../constants/email";
 
 export const Home = () => {
   const [nome, setNome] = useState("");
@@ -177,7 +177,7 @@ export const Home = () => {
 
       <br />
       {temSorteios && (
-        <Link to="/historico" className="text-blue-500 underline">
+        <Link to="/history" className="text-blue-500 underline">
           Ver Histórico de Sorteios
         </Link>
       )}
