@@ -51,9 +51,6 @@ export const History = () => {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Histórico de Sorteios</h1>
 
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      {success && <div className="text-green-500 mb-4">{success}</div>}
-
       {sorteios.length === 0 ? (
         <div className="text-gray-500">Ainda não há sorteios realizados.</div>
       ) : (
@@ -83,6 +80,10 @@ export const History = () => {
           </tbody>
         </table>
       )}
+
+      <br />
+      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {success && <div className="text-green-500 mb-4">{success}</div>}
     </div>
   );
 };
