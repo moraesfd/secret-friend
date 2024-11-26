@@ -6,6 +6,7 @@ import {
   EMAILJS_SERVICE_ID,
   EMAILJS_TEMPLATE_ID,
 } from "../../constants/email";
+import { HistoryContainer, HistoryList } from "./styles";
 
 export const History = () => {
   const [sorteios, setSorteios] = useState<Sorteio[]>([]);
@@ -48,42 +49,44 @@ export const History = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Histórico de Sorteios</h1>
+    <HistoryContainer>
+      <h1>Histórico de Sorteios</h1>
 
       {sorteios.length === 0 ? (
         <div className="text-gray-500">Ainda não há sorteios realizados.</div>
       ) : (
-        <table className="table-auto w-full mb-4">
-          <thead>
-            <tr>
-              <th className="px-4 py-2">Data do Sorteio</th>
-              <th className="px-4 py-2">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorteios.map((sorteio, index) => (
-              <tr key={index}>
-                <td className="border px-4 py-2">
-                  {new Date(sorteio.data).toLocaleString()}
-                </td>
-                <td className="border px-4 py-2">
-                  <button
-                    onClick={() => reenviarEmails(sorteio.resultados)}
-                    className="bg-yellow-500 text-white p-2 rounded"
-                  >
-                    {loading ? "Reenviando..." : "Reenviar Emails"}
-                  </button>
-                </td>
+        <HistoryList>
+          <table>
+            <thead>
+              <tr>
+                <th>Data do Sorteio</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sorteios.map((sorteio, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{new Date(sorteio.data).toLocaleString()}</td>
+                    <td>
+                      <button
+                        onClick={() => reenviarEmails(sorteio.resultados)}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      >
+                        {loading ? "Reenviando..." : "Reenviar Emails"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </HistoryList>
       )}
 
       <br />
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      {success && <div className="text-green-500 mb-4">{success}</div>}
-    </div>
+      {success && <div className="text-blue-500 mb-4">{success}</div>}
+    </HistoryContainer>
   );
 };

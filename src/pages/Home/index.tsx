@@ -7,6 +7,7 @@ import {
   EMAILJS_SERVICE_ID,
   EMAILJS_TEMPLATE_ID,
 } from "../../constants/email";
+import { HomeContainer } from "./styles";
 
 export const Home = () => {
   const [nome, setNome] = useState("");
@@ -130,27 +131,25 @@ export const Home = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Sorteador de Amigo Secreto</h1>
-
+    <HomeContainer>
       <div className="mb-4">
         <input
           type="text"
           value={nome}
           onChange={(e) => setNome(e.target.value)}
           placeholder="Nome"
-          className="border p-2 mr-2"
+          className="border p-2 mr-2 rounded text-gray-700"
         />
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
-          className="border p-2 mr-2"
+          className="border p-2 mr-2 rounded text-gray-700"
         />
         <button
           onClick={adicionarParticipante}
-          className="bg-blue-500 text-white p-2 rounded"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
           Adicionar Participante
         </button>
@@ -158,17 +157,19 @@ export const Home = () => {
 
       {error && <div className="text-red-500 mb-4">{error}</div>}
 
-      <ul className="mb-4">
-        {participantes.map((participante, index) => (
-          <li key={index} className="mb-2">
-            {`${participante.nome} (${participante.email})`}
-          </li>
-        ))}
-      </ul>
+      {participantes.length > 0 && (
+        <ul className="mb-4">
+          {participantes.map((participante, index) => (
+            <li key={index} className="mb-2">
+              {`${participante.nome} (${participante.email})`}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <button
         onClick={sortear}
-        className="bg-green-500 text-white p-2 rounded mb-4"
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
       >
         {loading ? "Sorteando..." : "Sortear"}
       </button>
@@ -181,6 +182,6 @@ export const Home = () => {
           Ver Histórico de Sorteios
         </Link>
       )}
-    </div>
+    </HomeContainer>
   );
 };

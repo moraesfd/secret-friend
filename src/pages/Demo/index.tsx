@@ -138,7 +138,7 @@ export const Demo = () => {
       </ul>
       <button
         onClick={sortear}
-        className="bg-green-500 text-white p-2 rounded mb-4"
+        className="bg-blue-500 text-white p-2 rounded mb-4"
         disabled={loading}
       >
         {loading ? "Sorteando..." : "Sortear"}
