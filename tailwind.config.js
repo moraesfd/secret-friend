@@ -5,7 +5,18 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        'xs': '475px',
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+      },
+      minHeight: {
+        'screen-safe': 'calc(100vh - 80px)',
+      },
+    },
   },
   plugins: [],
 }

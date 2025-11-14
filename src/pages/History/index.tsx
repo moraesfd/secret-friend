@@ -50,43 +50,113 @@ export const History = () => {
 
   return (
     <HistoryContainer>
-      <h1>Histórico de Sorteios</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-0">
+          <span className="mr-3">📋</span>
+          <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            Histórico de Sorteios
+          </span>
+        </h1>
+        {sorteios.length > 0 && (
+          <span className="text-sm bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
+            {sorteios.length} sorteio{sorteios.length > 1 ? "s" : ""} realizado
+            {sorteios.length > 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
 
       {sorteios.length === 0 ? (
-        <div className="text-gray-500">Ainda não há sorteios realizados.</div>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="text-6xl mb-4">🎁</div>
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent text-lg font-semibold">
+            Ainda não há sorteios realizados.
+          </div>
+          <div className="text-gray-500 text-sm mt-2">
+            Vá para a página inicial e realize seu primeiro sorteio!
+          </div>
+        </div>
       ) : (
         <HistoryList>
-          <table>
-            <thead>
-              <tr>
-                <th>Data do Sorteio</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorteios.map((sorteio, index) => {
-                return (
-                  <tr key={index}>
-                    <td>{new Date(sorteio.data).toLocaleString()}</td>
-                    <td>
-                      <button
-                        onClick={() => reenviarEmails(sorteio.resultados)}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      >
-                        {loading ? "Reenviando..." : "Reenviar Emails"}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          {/* Mobile Cards */}
+          <div className="block sm:hidden space-y-4">
+            {sorteios.map((sorteio, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl p-6 border border-purple-200 backdrop-blur-sm"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      🎯 Sorteio #{index + 1}
+                    </h3>
+                    <p className="text-sm text-gray-600 font-medium mt-1">
+                      {new Date(sorteio.data).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                  <span className="text-xs bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1.5 rounded-full font-semibold shadow-sm">
+                    {sorteio.resultados.length} participantes
+                  </span>
+                </div>
+                <button
+                  onClick={() => reenviarEmails(sorteio.resultados)}
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
+                  <span className="mr-2">📧</span>
+                  {loading ? "Reenviando..." : "Reenviar Emails"}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden sm:block">
+            <table>
+              <thead>
+                <tr>
+                  <th>Data do Sorteio</th>
+                  <th>Participantes</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorteios.map((sorteio, index) => {
+                  return (
+                    <tr key={index}>
+                      <td>{new Date(sorteio.data).toLocaleString("pt-BR")}</td>
+                      <td>
+                        {sorteio.resultados.length} pessoa
+                        {sorteio.resultados.length > 1 ? "s" : ""}
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => reenviarEmails(sorteio.resultados)}
+                          disabled={loading}
+                          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg"
+                        >
+                          <span className="mr-2">📧</span>
+                          {loading ? "Reenviando..." : "Reenviar Emails"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </HistoryList>
       )}
 
-      <br />
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      {success && <div className="text-blue-500 mb-4">{success}</div>}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mt-6">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mt-6">
+          {success}
+        </div>
+      )}
     </HistoryContainer>
   );
 };
