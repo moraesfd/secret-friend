@@ -18,7 +18,13 @@ export const History = () => {
     emailjs.init(EMAILJS_PUBLIC_KEY);
     const savedSorteios = localStorage.getItem("sorteios");
     if (savedSorteios) {
-      setSorteios(JSON.parse(savedSorteios));
+      const sorteiosData = JSON.parse(savedSorteios);
+      // Ordena do mais recente para o mais antigo
+      const sorteiosOrdenados = sorteiosData.sort(
+        (a: Sorteio, b: Sorteio) =>
+          new Date(b.data).getTime() - new Date(a.data).getTime()
+      );
+      setSorteios(sorteiosOrdenados);
     }
   }, []);
 
@@ -87,7 +93,7 @@ export const History = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                      🎯 Sorteio #{index + 1}
+                      🎯 Sorteio #{sorteios.length - index}
                     </h3>
                     <p className="text-sm text-gray-600 font-medium mt-1">
                       {new Date(sorteio.data).toLocaleString("pt-BR")}
