@@ -59,7 +59,7 @@ export const History = () => {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-0">
           <span className="mr-3">📋</span>
-          <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <span className="heading-gradient">
             Histórico de Sorteios
           </span>
         </h1>
@@ -74,7 +74,7 @@ export const History = () => {
       {sorteios.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="text-6xl mb-4">🎁</div>
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent text-lg font-semibold">
+          <div className="heading-gradient text-lg font-semibold">
             Ainda não há sorteios realizados.
           </div>
           <div className="text-gray-500 text-sm mt-2">
@@ -92,7 +92,7 @@ export const History = () => {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-bold text-lg bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <h3 className="font-bold text-lg heading-gradient">
                       🎯 Sorteio #{sorteios.length - index}
                     </h3>
                     <p className="text-sm text-gray-600 font-medium mt-1">
@@ -106,7 +106,7 @@ export const History = () => {
                 <button
                   onClick={() => reenviarEmails(sorteio.resultados)}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                  className="btn-primary btn-block btn-lg"
                 >
                   <span className="mr-2">📧</span>
                   {loading ? "Reenviando..." : "Reenviar Emails"}
@@ -138,7 +138,7 @@ export const History = () => {
                         <button
                           onClick={() => reenviarEmails(sorteio.resultados)}
                           disabled={loading}
-                          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-lg"
+                          className="btn-primary btn-lg"
                         >
                           <span className="mr-2">📧</span>
                           {loading ? "Reenviando..." : "Reenviar Emails"}

@@ -1,3 +1,73 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  /* ---------- Botões ---------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-bold rounded-xl text-base
+      transition-all duration-300 shadow-md
+      disabled:bg-none disabled:bg-gray-300 disabled:text-gray-500
+      disabled:cursor-not-allowed disabled:shadow-none disabled:hover:translate-y-0
+      disabled:hover:scale-100;
+  }
+
+  .btn-block {
+    @apply w-full;
+  }
+
+  .btn-sm {
+    @apply py-2 px-4 text-sm;
+  }
+
+  .btn-md {
+    @apply py-3 px-5;
+  }
+
+  .btn-lg {
+    @apply py-4 px-6;
+  }
+
+  .btn-xl {
+    @apply py-5 px-8;
+  }
+
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-blue-500 to-purple-600 text-white
+      hover:from-blue-600 hover:to-purple-700 hover:shadow-xl hover:-translate-y-1
+      active:translate-y-0;
+  }
+
+  .btn-success {
+    @apply btn bg-gradient-to-r from-green-500 to-emerald-600 text-white
+      hover:from-green-600 hover:to-emerald-700 hover:shadow-xl hover:-translate-y-1
+      active:translate-y-0;
+  }
+
+  .btn-outline-danger {
+    @apply btn bg-transparent text-red-500 border-2 border-red-200 shadow-none
+      hover:text-white hover:bg-red-500 hover:border-red-500 hover:shadow-lg
+      disabled:border-gray-300;
+  }
+
+  /* ---------- Textos ---------- */
+  .heading-gradient {
+    @apply bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent;
+  }
+
+  .heading-gradient-success {
+    @apply bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent;
+  }
+
+  .page-title {
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold heading-gradient;
+  }
+
+  .section-title {
+    @apply text-xl sm:text-2xl font-bold heading-gradient;
+  }
+
+  .text-subtitle {
+    @apply text-gray-600 text-sm md:text-base font-medium;
+  }
+}

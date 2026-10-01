@@ -221,11 +221,11 @@ export const Home = () => {
       <div className="mb-6 w-full max-w-4xl">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-4 mb-2">
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="page-title">
               Sorteio de Amigo Secreto
             </h1>
           </div>
-          <p className="text-gray-600 text-sm md:text-base">
+          <p className="text-subtitle">
             Organize seu amigo secreto de forma simples e divertida!
           </p>
         </div>
@@ -304,11 +304,7 @@ export const Home = () => {
             <button
               onClick={adicionarParticipante}
               disabled={!isFormValid || loading}
-              className={`w-full py-4 px-6 rounded-xl font-bold text-white transition-all duration-300 shadow-lg ${
-                isFormValid && !loading
-                  ? "bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 hover:shadow-xl transform hover:-translate-y-1 active:transform active:translate-y-0"
-                  : "bg-gray-300 cursor-not-allowed shadow-none"
-              }`}
+              className="btn-primary btn-block btn-lg"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -365,7 +361,7 @@ export const Home = () => {
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎯</span>
-              <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <h3 className="section-title">
                 Participantes ({participantes.length}/50)
               </h3>
             </div>
@@ -400,7 +396,7 @@ export const Home = () => {
                     </div>
                     <button
                       onClick={() => removerParticipante(index)}
-                      className="flex items-center gap-2 text-red-500 hover:text-white hover:bg-red-500 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-semibold border-2 border-red-200 hover:border-red-500 hover:shadow-lg self-start sm:self-center"
+                      className="btn-outline-danger btn-sm self-start sm:self-center"
                       title={`Remover ${participante.nome}`}
                     >
                       🗑️ <span>Remover</span>
@@ -426,11 +422,11 @@ export const Home = () => {
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-4 mb-3">
               <span className="text-3xl animate-pulse">🎲</span>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent">
+              <h3 className="text-2xl font-bold heading-gradient-success">
                 Realizar Sorteio
               </h3>
             </div>
-            <p className="text-gray-600 font-medium">
+            <p className="text-subtitle">
               {participantes.length < 2
                 ? `Adicione ${2 - participantes.length} participante${
                     2 - participantes.length > 1 ? "s" : ""
@@ -442,11 +438,7 @@ export const Home = () => {
           <button
             onClick={sortear}
             disabled={loading || participantes.length < 2}
-            className={`w-full py-6 px-8 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl ${
-              loading || participantes.length < 2
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
-                : "bg-gradient-to-r from-green-500 via-green-600 to-emerald-600 hover:from-green-600 hover:via-green-700 hover:to-emerald-700 text-white hover:shadow-green-200 transform hover:-translate-y-2 hover:scale-105"
-            }`}
+            className="btn-success btn-block btn-lg"
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -497,7 +489,7 @@ export const Home = () => {
         {temSorteios && (
           <Link
             to="/history"
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 no-underline"
+            className="btn-primary btn-lg no-underline"
           >
             📋 Ver Histórico de Sorteios
           </Link>
