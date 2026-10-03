@@ -1,24 +1,21 @@
 import { useState } from "react";
-
-interface Participante {
-  nome: string;
-  email: string;
-}
-
-interface ResultadoSorteio {
-  participante: string;
-  amigoSecreto: string;
-}
+import type { Participante, ResultadoSorteio } from "../../@types";
+import {
+  adicionarRegraSorteio,
+  realizarSorteio,
+  removerRegrasDoParticipante,
+  type RegraSorteio,
+} from "../Home/sorteio";
 
 const initialState: Participante[] = [
-  { nome: "Fulano", email: "fulano@mail.com" },
-  { nome: "Ciclano", email: "ciclano@mail.com" },
-  { nome: "Beltrano", email: "beltrano@mail.com" },
+  { nome: "Ana", email: "ana@example.com" },
+  { nome: "Bia", email: "bia@example.com" },
+  { nome: "Caio", email: "caio@example.com" },
 ];
 
 const emailValido = (email: string): boolean => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
+  return regex.test(email) && email.length <= 100;
 };
 
 export const Demo = () => {
@@ -26,131 +23,368 @@ export const Demo = () => {
   const [email, setEmail] = useState("");
   const [participantes, setParticipantes] =
     useState<Participante[]>(initialState);
-  const [resultado, setResultado] = useState<ResultadoSorteio[]>([]);
+  const [regras, setRegras] = useState<RegraSorteio[]>([]);
+  const [regraParticipante1, setRegraParticipante1] = useState("");
+  const [regraParticipante2, setRegraParticipante2] = useState("");
+  const [resultado, setResultado] = useState<ResultadoSorteio[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const adicionarParticipante = () => {
-    if (!nome || !email) {
+    const nomeProcessado = nome.trim();
+    const emailProcessado = email.trim().toLowerCase();
+
+    if (!nomeProcessado || !emailProcessado) {
       setError("Por favor, preencha ambos os campos.");
       return;
     }
-    if (!emailValido(email)) {
+    if (!emailValido(emailProcessado)) {
       setError("Por favor, insira um email válido.");
       return;
     }
-    if (participantes.some((p) => p.email === email)) {
+    if (
+      participantes.some(
+        (participante) => participante.email.toLowerCase() === emailProcessado,
+      )
+    ) {
       setError("Esse participante já foi adicionado.");
       return;
     }
+    if (participantes.length >= 50) {
+      setError("Limite máximo de 50 participantes atingido.");
+      return;
+    }
 
-    setParticipantes([...participantes, { nome, email }]);
+    setParticipantes((prev) => [
+      ...prev,
+      { nome: nomeProcessado, email: emailProcessado },
+    ]);
     setNome("");
     setEmail("");
+    setResultado(null);
     setError(null);
   };
 
-  const sortear = () => {
-    if (participantes.length < 2) {
-      setError("É necessário pelo menos 2 participantes para sortear.");
-      return;
-    }
-    setLoading(true);
-    setTimeout(() => {
-      const resultadoSorteio = realizarSorteio(participantes);
-      if (resultadoSorteio) {
-        setResultado(resultadoSorteio);
-        setError(null);
-      } else {
-        setError("Não foi possível realizar o sorteio. Tente novamente.");
-      }
-      setLoading(false);
-    }, 2000);
+  const removerParticipante = (emailRemovido: string) => {
+    setParticipantes((prev) =>
+      prev.filter((participante) => participante.email !== emailRemovido),
+    );
+    setRegras((prev) => removerRegrasDoParticipante(prev, emailRemovido));
+    if (regraParticipante1 === emailRemovido) setRegraParticipante1("");
+    if (regraParticipante2 === emailRemovido) setRegraParticipante2("");
+    setResultado(null);
+    setError(null);
   };
 
-  const realizarSorteio = (
-    participantes: Participante[]
-  ): ResultadoSorteio[] | null => {
-    let sorteio: Participante[];
-    let valido = false;
-
-    while (!valido) {
-      sorteio = shuffleArray([...participantes]);
-      valido = participantes.every(
-        (participante, index) => participante.email !== sorteio[index].email
-      );
-    }
-
-    const resultadoSorteio: ResultadoSorteio[] = participantes.map(
-      (participante, index) => {
-        const amigoSecreto = sorteio[index];
-        return {
-          participante: participante.nome,
-          amigoSecreto: amigoSecreto.nome,
-        };
-      }
+  const adicionarRegra = () => {
+    const regrasAtualizadas = adicionarRegraSorteio(
+      regras,
+      regraParticipante1,
+      regraParticipante2,
     );
 
-    return resultadoSorteio;
+    if (!regrasAtualizadas) {
+      setError("Selecione duas pessoas diferentes e evite regras duplicadas.");
+      return;
+    }
+
+    setRegras(regrasAtualizadas);
+    setRegraParticipante1("");
+    setRegraParticipante2("");
+    setResultado(null);
+    setError(null);
   };
 
-  const shuffleArray = (array: Participante[]) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+  const removerRegra = (indiceRemovido: number) => {
+    setRegras((prev) => prev.filter((_, indice) => indice !== indiceRemovido));
+    setResultado(null);
+  };
+
+  const sortear = () => {
+    if (participantes.length < 3) {
+      setResultado(null);
+      setError("É necessário pelo menos 3 participantes para sortear.");
+      return;
     }
-    return array;
+
+    const resultadoSorteio = realizarSorteio(participantes, regras);
+    if (!resultadoSorteio) {
+      setResultado(null);
+      setError(
+        "Não existe uma combinação possível com essas condições. Remova uma regra e tente novamente.",
+      );
+      return;
+    }
+
+    setResultado(resultadoSorteio);
+    setError(null);
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Sorteador de Amigo Secreto</h1>
-      <div className="mb-4">
-        <input
-          type="text"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          placeholder="Nome"
-          className="border p-2 mr-2"
-        />
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          className="border p-2 mr-2"
-        />
-        <button
-          onClick={adicionarParticipante}
-          className="bg-blue-500 text-white p-2 rounded"
-        >
-          Adicionar Participante
-        </button>
-      </div>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      <ul className="mb-4">
-        {participantes.map((participante, index) => (
-          <li
-            key={index}
-            className="mb-2"
-          >{`${participante.nome} (${participante.email})`}</li>
-        ))}
-      </ul>
-      <button
-        onClick={sortear}
-        className="bg-blue-500 text-white p-2 rounded mb-4"
-        disabled={loading}
+    <div className="container mx-auto max-w-4xl px-4 py-8">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Teste do sorteio</h1>
+        <p className="mt-2 text-gray-600">
+          Modo de teste: o resultado aparece aqui e não envia emails nem salva
+          histórico.
+        </p>
+      </header>
+
+      <form
+        className="mb-6 grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+        onSubmit={(event) => {
+          event.preventDefault();
+          adicionarParticipante();
+        }}
       >
-        {loading ? "Sorteando..." : "Sortear"}
-      </button>
-      <ul>
-        {resultado.map((item, index) => (
-          <li
-            key={index}
-            className="mb-2"
-          >{`${item.participante} tirou ${item.amigoSecreto}`}</li>
-        ))}
-      </ul>
+        <div>
+          <label
+            htmlFor="demo-nome"
+            className="mb-1 block text-sm font-semibold text-gray-700"
+          >
+            Nome
+          </label>
+          <input
+            id="demo-nome"
+            type="text"
+            value={nome}
+            onChange={(event) => setNome(event.target.value)}
+            placeholder="Nome do participante"
+            className="w-full rounded-lg border border-gray-300 p-3 text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            maxLength={50}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="demo-email"
+            className="mb-1 block text-sm font-semibold text-gray-700"
+          >
+            Email de teste
+          </label>
+          <input
+            id="demo-email"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="pessoa@example.com"
+            className="w-full rounded-lg border border-gray-300 p-3 text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            maxLength={100}
+          />
+        </div>
+        <button type="submit" className="btn-primary btn-sm h-12">
+          Adicionar participante
+        </button>
+      </form>
+
+      {error && (
+        <div
+          role="alert"
+          className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700"
+        >
+          {error}
+        </div>
+      )}
+
+      <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-4 text-xl font-semibold text-gray-900">
+          Participantes ({participantes.length}/50)
+        </h2>
+        <ul className="divide-y divide-gray-100">
+          {participantes.map((participante) => (
+            <li
+              key={participante.email}
+              className="flex items-center justify-between gap-4 py-3"
+            >
+              <span className="min-w-0">
+                <span className="block font-medium text-gray-800">
+                  {participante.nome}
+                </span>
+                <span className="block truncate text-sm text-gray-500">
+                  {participante.email}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => removerParticipante(participante.email)}
+                className="btn-outline-danger btn-sm shrink-0"
+                aria-label={`Remover ${participante.nome}`}
+              >
+                Remover
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {participantes.length >= 2 && (
+        <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Condições do sorteio
+          </h2>
+          {regras.length === 0 && (
+            <p className="mt-2 text-sm text-gray-600">
+              Ainda não há condições. Selecione quem não pode tirar qual
+              participante; o sentido inverso continua permitido.
+            </p>
+          )}
+
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_1fr_auto] sm:items-end">
+            <div>
+              <label
+                htmlFor="demo-regra-pessoa-1"
+                className="mb-1 block text-sm font-semibold text-gray-700"
+              >
+                Participante
+              </label>
+              <select
+                id="demo-regra-pessoa-1"
+                value={regraParticipante1}
+                onChange={(event) => {
+                  const selecionado = event.target.value;
+                  setRegraParticipante1(selecionado);
+                  if (selecionado === regraParticipante2) {
+                    setRegraParticipante2("");
+                  }
+                }}
+                className="w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="">Selecione uma pessoa</option>
+                {participantes.map((participante) => (
+                  <option key={participante.email} value={participante.email}>
+                    {participante.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <span className="hidden pb-3 text-sm text-gray-500 sm:block">
+              não pode tirar
+            </span>
+            <div>
+              <label
+                htmlFor="demo-regra-pessoa-2"
+                className="mb-1 block text-sm font-semibold text-gray-700"
+              >
+                Participante
+              </label>
+              <select
+                id="demo-regra-pessoa-2"
+                value={regraParticipante2}
+                onChange={(event) => {
+                  const selecionado = event.target.value;
+                  setRegraParticipante2(selecionado);
+                  if (selecionado === regraParticipante1) {
+                    setRegraParticipante1("");
+                  }
+                }}
+                className="w-full rounded-lg border border-gray-300 bg-white p-3 text-gray-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="">Selecione uma pessoa</option>
+                {participantes.map((participante) => (
+                  <option key={participante.email} value={participante.email}>
+                    {participante.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              onClick={adicionarRegra}
+              disabled={
+                !regraParticipante1 ||
+                !regraParticipante2 ||
+                regraParticipante1 === regraParticipante2
+              }
+              className="btn-primary btn-sm h-12"
+            >
+              Adicionar condição
+            </button>
+          </div>
+
+          {regras.length > 0 && (
+            <ul className="mt-4 divide-y divide-gray-100 border-t border-gray-100">
+              {regras.map((regra, index) => {
+                const pessoa1 = participantes.find(
+                  (participante) =>
+                    participante.email === regra.participante1Email,
+                );
+                const pessoa2 = participantes.find(
+                  (participante) =>
+                    participante.email === regra.participante2Email,
+                );
+
+                return (
+                  <li
+                    key={`${regra.participante1Email}:${regra.participante2Email}`}
+                    className="flex items-center justify-between gap-4 py-3"
+                  >
+                    <span className="text-sm text-gray-700">
+                      {pessoa1?.nome} não pode sair com {pessoa2?.nome}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removerRegra(index)}
+                      className="btn-outline-danger btn-sm shrink-0"
+                      aria-label={`Remover condição entre ${pessoa1?.nome} e ${pessoa2?.nome}`}
+                    >
+                      Remover
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      )}
+
+      <section className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Executar sorteio
+            </h2>
+            <p className="mt-1 text-sm text-gray-600">
+              {participantes.length < 3
+                ? `Adicione ${3 - participantes.length} participante${
+                    3 - participantes.length === 1 ? "" : "s"
+                  } para continuar.`
+                : `${participantes.length} participantes prontos para sortear.`}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={sortear}
+            disabled={participantes.length < 3}
+            className="btn-success btn-sm h-12"
+          >
+            Sortear novamente
+          </button>
+        </div>
+      </section>
+
+      {resultado && (
+        <section
+          aria-live="polite"
+          className="rounded-xl border border-green-200 bg-green-50 p-5"
+        >
+          <h2 className="mb-4 text-xl font-semibold text-green-900">
+            Resultado do sorteio
+          </h2>
+          <ul className="divide-y divide-green-200">
+            {resultado.map((item) => (
+              <li
+                key={item.participanteEmail}
+                className="flex flex-col justify-between gap-1 py-3 sm:flex-row sm:items-center sm:gap-4"
+              >
+                <span className="font-semibold text-gray-900">
+                  {item.participante}
+                </span>
+                <span className="text-sm text-green-800">
+                  tirou {item.amigoSecreto} ({item.amigoSecretoEmail})
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 };

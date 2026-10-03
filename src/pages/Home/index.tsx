@@ -7,12 +7,21 @@ import {
   EMAILJS_SERVICE_ID,
   EMAILJS_TEMPLATE_ID,
 } from "../../constants/email";
+import {
+  adicionarRegraSorteio,
+  realizarSorteio,
+  removerRegrasDoParticipante,
+  type RegraSorteio,
+} from "./sorteio";
 import { HomeContainer } from "./styles";
 
 export const Home = () => {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [participantes, setParticipantes] = useState<Participante[]>([]);
+  const [regras, setRegras] = useState<RegraSorteio[]>([]);
+  const [regraParticipante1, setRegraParticipante1] = useState("");
+  const [regraParticipante2, setRegraParticipante2] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -66,7 +75,7 @@ export const Home = () => {
       hasError = true;
     } else if (!nomeValido(nomeProcessado)) {
       setNomeError(
-        "Nome deve ter entre 2-50 caracteres e conter apenas letras"
+        "Nome deve ter entre 2-50 caracteres e conter apenas letras",
       );
       hasError = true;
     }
@@ -110,8 +119,51 @@ export const Home = () => {
   const removerParticipante = (index: number) => {
     const participanteRemovido = participantes[index];
     setParticipantes((prev) => prev.filter((_, i) => i !== index));
+    setRegras((prev) =>
+      removerRegrasDoParticipante(prev, participanteRemovido.email),
+    );
+    if (regraParticipante1 === participanteRemovido.email) {
+      setRegraParticipante1("");
+    }
+    if (regraParticipante2 === participanteRemovido.email) {
+      setRegraParticipante2("");
+    }
     setSuccess(`${participanteRemovido.nome} foi removido`);
     setTimeout(() => setSuccess(null), 2000);
+  };
+
+  const adicionarRegra = () => {
+    const regrasAtualizadas = adicionarRegraSorteio(
+      regras,
+      regraParticipante1,
+      regraParticipante2,
+    );
+
+    if (!regrasAtualizadas) {
+      setError(
+        "Selecione duas pessoas diferentes. Essa regra já pode existir.",
+      );
+      return;
+    }
+
+    const participante1 = participantes.find(
+      (participante) => participante.email === regraParticipante1,
+    );
+    const participante2 = participantes.find(
+      (participante) => participante.email === regraParticipante2,
+    );
+    setRegras(regrasAtualizadas);
+    setRegraParticipante1("");
+    setRegraParticipante2("");
+    setError(null);
+    setSuccess(
+      `${participante1?.nome} e ${participante2?.nome} não poderão sair um com o outro.`,
+    );
+    setTimeout(() => setSuccess(null), 3000);
+  };
+
+  const removerRegra = (indiceRemovido: number) => {
+    setRegras((prev) => prev.filter((_, indice) => indice !== indiceRemovido));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -133,13 +185,13 @@ export const Home = () => {
   };
 
   const sortear = () => {
-    if (participantes.length < 2) {
-      return setError("É necessário pelo menos 2 participantes para sortear.");
+    if (participantes.length < 3) {
+      return setError("É necessário pelo menos 3 participantes para sortear.");
     }
 
     setLoading(true);
 
-    const resultado = realizarSorteio(participantes);
+    const resultado = realizarSorteio(participantes, regras);
     if (resultado) {
       const data = new Date().toISOString();
       const novoSorteio = { data, resultados: resultado };
@@ -147,7 +199,9 @@ export const Home = () => {
       salvarSorteio(novoSorteio);
       enviarEmails(resultado);
     } else {
-      setError("Não foi possível realizar o sorteio. Tente novamente.");
+      setError(
+        "Não há uma combinação possível com essas regras. Remova uma regra e tente novamente.",
+      );
       setLoading(false);
     }
   };
@@ -159,36 +213,6 @@ export const Home = () => {
     setSuccess("Sorteio realizado e salvo com sucesso!");
     setLoading(false);
     setTemSorteios(true);
-  };
-
-  const shuffleArray = (array: Participante[]): Participante[] => {
-    const arrayCopiado = [...array];
-    for (let i = arrayCopiado.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arrayCopiado[i], arrayCopiado[j]] = [arrayCopiado[j], arrayCopiado[i]];
-    }
-    return arrayCopiado;
-  };
-
-  const realizarSorteio = (
-    participantes: Participante[]
-  ): ResultadoSorteio[] | null => {
-    let sorteio: Participante[];
-    let valido = false;
-
-    while (!valido) {
-      sorteio = shuffleArray(participantes);
-      valido = participantes.every(
-        (participante, index) => participante.email !== sorteio[index].email
-      );
-    }
-
-    return participantes.map((participante, index) => ({
-      participante: participante.nome,
-      participanteEmail: participante.email,
-      amigoSecreto: sorteio[index].nome,
-      amigoSecretoEmail: sorteio[index].email,
-    }));
   };
 
   const enviarEmails = async (resultados: ResultadoSorteio[]) => {
@@ -204,7 +228,7 @@ export const Home = () => {
         await emailjs.send(
           EMAILJS_SERVICE_ID,
           EMAILJS_TEMPLATE_ID,
-          templateParams
+          templateParams,
         );
       }
       setSuccess("Emails enviados com sucesso!");
@@ -221,9 +245,7 @@ export const Home = () => {
       <div className="mb-6 w-full max-w-4xl">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-4 mb-2">
-            <h1 className="page-title">
-              Sorteio de Amigo Secreto
-            </h1>
+            <h1 className="page-title">Sorteio de Amigo Secreto</h1>
           </div>
           <p className="text-subtitle">
             Organize seu amigo secreto de forma simples e divertida!
@@ -246,8 +268,8 @@ export const Home = () => {
                   nomeError
                     ? "border-red-300 focus:ring-red-100 bg-red-50 focus:border-red-400"
                     : nome && nomeValido(nome.trim())
-                    ? "border-green-300 focus:ring-green-100 bg-green-50 focus:border-green-400"
-                    : "border-gray-200 focus:ring-blue-100 bg-white focus:border-blue-400 hover:border-gray-300"
+                      ? "border-green-300 focus:ring-green-100 bg-green-50 focus:border-green-400"
+                      : "border-gray-200 focus:ring-blue-100 bg-white focus:border-blue-400 hover:border-gray-300"
                 }`}
                 maxLength={50}
               />
@@ -278,8 +300,8 @@ export const Home = () => {
                   emailError
                     ? "border-red-300 focus:ring-red-100 bg-red-50 focus:border-red-400"
                     : email && emailValido(email.trim())
-                    ? "border-green-300 focus:ring-green-100 bg-green-50 focus:border-green-400"
-                    : "border-gray-200 focus:ring-blue-100 bg-white focus:border-blue-400 hover:border-gray-300"
+                      ? "border-green-300 focus:ring-green-100 bg-green-50 focus:border-green-400"
+                      : "border-gray-200 focus:ring-blue-100 bg-white focus:border-blue-400 hover:border-gray-300"
                 }`}
                 maxLength={100}
               />
@@ -292,7 +314,7 @@ export const Home = () => {
                 emailValido(email.trim()) &&
                 !emailError &&
                 !participantes.some(
-                  (p) => p.email.toLowerCase() === email.trim().toLowerCase()
+                  (p) => p.email.toLowerCase() === email.trim().toLowerCase(),
                 ) && (
                   <p className="text-green-600 text-sm mt-2 flex items-center bg-green-50 p-2 rounded-lg">
                     <span className="mr-2 text-green-400">✅</span> Email válido
@@ -365,7 +387,7 @@ export const Home = () => {
                 Participantes ({participantes.length}/50)
               </h3>
             </div>
-            {participantes.length >= 2 && (
+            {participantes.length >= 3 && (
               <span className="text-sm bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-full font-semibold shadow-lg">
                 ✅ Pronto para sortear!
               </span>
@@ -406,15 +428,159 @@ export const Home = () => {
               ))}
             </div>
 
-            {participantes.length < 2 && (
+            {participantes.length < 3 && (
               <div className="text-center mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-xl">
                 <p className="text-yellow-700 font-semibold">
-                  ⚠️ Adicione pelo menos 2 participantes para realizar o sorteio
+                  ⚠️ Adicione pelo menos 3 participantes para realizar o sorteio
                 </p>
               </div>
             )}
           </div>
         </div>
+      )}
+
+      {participantes.length >= 2 && (
+        <section
+          aria-labelledby="condicoes-sorteio-titulo"
+          className="w-full max-w-4xl mb-6 bg-white rounded-xl border border-gray-200 p-6 shadow-sm"
+        >
+          <div className="mb-4">
+            <h3 id="condicoes-sorteio-titulo" className="section-title">
+              Condições do sorteio
+            </h3>
+            {regras.length === 0 ? (
+              <div className="mt-3 rounded-lg border border-dashed border-blue-200 bg-blue-50 p-4">
+                <p className="font-semibold text-gray-800">
+                  Ainda não há condições adicionadas.
+                </p>
+                <p className="mt-1 text-sm text-gray-600">
+                  Deseja adicionar uma regra? Selecione quem não pode tirar qual
+                  participante. Isso não bloqueia o sentido inverso.
+                </p>
+              </div>
+            ) : (
+              <p className="text-subtitle mt-1">
+                Cada regra vale somente na direção indicada. O sentido inverso
+                continua permitido.
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto] gap-3 items-end">
+            <div>
+              <label
+                className="block text-sm font-semibold text-gray-700 mb-2"
+                htmlFor="regra-participante-1"
+              >
+                Participante
+              </label>
+              <select
+                id="regra-participante-1"
+                value={regraParticipante1}
+                onChange={(event) => {
+                  const emailSelecionado = event.target.value;
+                  setRegraParticipante1(emailSelecionado);
+                  if (emailSelecionado === regraParticipante2) {
+                    setRegraParticipante2("");
+                  }
+                }}
+                className="w-full border-2 border-gray-200 p-3 rounded-lg text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                disabled={loading}
+              >
+                <option value="">Selecione uma pessoa</option>
+                {participantes.map((participante) => (
+                  <option key={participante.email} value={participante.email}>
+                    {participante.nome} ({participante.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <span className="hidden sm:block text-sm text-gray-500 pb-3">
+              não pode tirar
+            </span>
+
+            <div>
+              <label
+                className="block text-sm font-semibold text-gray-700 mb-2"
+                htmlFor="regra-participante-2"
+              >
+                Participante
+              </label>
+              <select
+                id="regra-participante-2"
+                value={regraParticipante2}
+                onChange={(event) => {
+                  const emailSelecionado = event.target.value;
+                  setRegraParticipante2(emailSelecionado);
+                  if (emailSelecionado === regraParticipante1) {
+                    setRegraParticipante1("");
+                  }
+                }}
+                className="w-full border-2 border-gray-200 p-3 rounded-lg text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                disabled={loading}
+              >
+                <option value="">Selecione uma pessoa</option>
+                {participantes.map((participante) => (
+                  <option key={participante.email} value={participante.email}>
+                    {participante.nome} ({participante.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={adicionarRegra}
+              disabled={
+                loading ||
+                !regraParticipante1 ||
+                !regraParticipante2 ||
+                regraParticipante1 === regraParticipante2
+              }
+              className="btn-primary btn-sm h-12"
+            >
+              Adicionar regra
+            </button>
+          </div>
+
+          {regras.length > 0 && (
+            <ul className="mt-5 divide-y divide-gray-100 border-t border-gray-100">
+              {regras.map((regra, index) => {
+                const participante1 = participantes.find(
+                  (participante) =>
+                    participante.email.toLowerCase() ===
+                    regra.participante1Email.toLowerCase(),
+                );
+                const participante2 = participantes.find(
+                  (participante) =>
+                    participante.email.toLowerCase() ===
+                    regra.participante2Email.toLowerCase(),
+                );
+
+                return (
+                  <li
+                    key={`${regra.participante1Email}:${regra.participante2Email}`}
+                    className="flex items-center justify-between gap-4 py-3"
+                  >
+                    <span className="text-sm text-gray-700">
+                      {participante1?.nome} não pode sair com{" "}
+                      {participante2?.nome}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removerRegra(index)}
+                      className="btn-outline-danger btn-sm shrink-0"
+                      aria-label={`Remover regra entre ${participante1?.nome} e ${participante2?.nome}`}
+                    >
+                      Remover
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       )}
 
       <div className="flex flex-col items-center gap-6 w-full max-w-4xl">
@@ -427,9 +593,9 @@ export const Home = () => {
               </h3>
             </div>
             <p className="text-subtitle">
-              {participantes.length < 2
-                ? `Adicione ${2 - participantes.length} participante${
-                    2 - participantes.length > 1 ? "s" : ""
+              {participantes.length < 3
+                ? `Adicione ${3 - participantes.length} participante${
+                    3 - participantes.length > 1 ? "s" : ""
                   } para continuar`
                 : `🎉 ${participantes.length} participantes prontos para a magia do sorteio!`}
             </p>
@@ -437,7 +603,7 @@ export const Home = () => {
 
           <button
             onClick={sortear}
-            disabled={loading || participantes.length < 2}
+            disabled={loading || participantes.length < 3}
             className="btn-success btn-block btn-lg"
           >
             {loading ? (
@@ -471,7 +637,7 @@ export const Home = () => {
             )}
           </button>
 
-          {participantes.length >= 2 && (
+          {participantes.length >= 3 && (
             <div className="text-center mt-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
               <p className="text-blue-700 text-sm font-medium">
                 📧 Os resultados serão enviados por email para cada participante
@@ -487,10 +653,7 @@ export const Home = () => {
         )}
 
         {temSorteios && (
-          <Link
-            to="/history"
-            className="btn-primary btn-lg no-underline"
-          >
+          <Link to="/history" className="btn-primary btn-lg no-underline">
             📋 Ver Histórico de Sorteios
           </Link>
         )}
