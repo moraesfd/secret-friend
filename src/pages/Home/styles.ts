@@ -11,18 +11,14 @@ export const HomeContainer = styled.div`
   justify-content: flex-start;
   padding-top: 2rem;
 
+  > * {
+    width: 100%;
+    max-width: 640px;
+  }
+
   @media (min-width: 640px) {
-    padding: 2.5rem;
+    padding: 2rem;
     padding-top: 3rem;
-  }
-
-  @media (min-width: 1024px) {
-    padding: 4rem;
-    justify-content: flex-start;
-  }
-
-  @media (min-width: 1280px) {
-    padding: 5rem;
   }
 
   form {

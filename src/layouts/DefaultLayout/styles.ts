@@ -16,17 +16,4 @@ export const LayoutContainer = styled.div`
   
   display: flex;
   flex-direction: column;
-
-  @media (min-width: 640px) {
-    max-width: 100%;
-    margin: 0 auto;
-  }
-
-  @media (min-width: 1024px) {
-    max-width: 90rem;
-  }
-
-  @media (min-width: 1280px) {
-    max-width: 100rem;
-  }
 `;

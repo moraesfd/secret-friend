@@ -242,7 +242,7 @@ export const Home = () => {
 
   return (
     <HomeContainer>
-      <div className="mb-6 w-full max-w-4xl">
+      <div className="mb-6 w-full">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-4 mb-2">
             <h1 className="page-title">Sorteio de Amigo Secreto</h1>
@@ -251,7 +251,7 @@ export const Home = () => {
             Organize seu amigo secreto de forma simples e divertida!
           </p>
         </div>
-        <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-6 border border-gray-100 backdrop-blur-sm">
+        <div className="mx-auto w-full max-w-screen-sm bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl p-6 border border-gray-100 backdrop-blur-sm">
           <div className="flex flex-col gap-4">
             {/* Campo Nome */}
             <div className="flex flex-col">
@@ -373,13 +373,13 @@ export const Home = () => {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 w-full max-w-4xl">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 w-full">
           {error}
         </div>
       )}
 
       {participantes.length > 0 && (
-        <div className="w-full max-w-4xl mb-6">
+        <div className="w-full mb-6">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎯</span>
@@ -442,7 +442,7 @@ export const Home = () => {
       {participantes.length >= 2 && (
         <section
           aria-labelledby="condicoes-sorteio-titulo"
-          className="w-full max-w-4xl mb-6 bg-white rounded-xl border border-gray-200 p-6 shadow-sm"
+          className="w-full mb-6 bg-white rounded-xl border border-gray-200 p-6 shadow-sm"
         >
           <div className="mb-4">
             <h3 id="condicoes-sorteio-titulo" className="section-title">
@@ -466,7 +466,7 @@ export const Home = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto] gap-3 items-end">
+          <div className="mx-auto w-full max-w-4xl grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] gap-3 items-end">
             <div>
               <label
                 className="block text-sm font-semibold text-gray-700 mb-2"
@@ -583,7 +583,7 @@ export const Home = () => {
         </section>
       )}
 
-      <div className="flex flex-col items-center gap-6 w-full max-w-4xl">
+      <div className="flex flex-col items-center gap-6 w-full">
         <div className="w-full bg-gradient-to-br from-white via-purple-50 to-blue-50 rounded-2xl shadow-2xl p-8 border-2 border-purple-100">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-4 mb-3">

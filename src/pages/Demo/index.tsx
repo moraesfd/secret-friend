@@ -120,7 +120,7 @@ export const Demo = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="w-full px-4 py-8 sm:px-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Teste do sorteio</h1>
         <p className="mt-2 text-gray-600">
@@ -130,7 +130,7 @@ export const Demo = () => {
       </header>
 
       <form
-        className="mb-6 grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+        className="mx-auto mb-6 w-full max-w-4xl grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end"
         onSubmit={(event) => {
           event.preventDefault();
           adicionarParticipante();
@@ -227,7 +227,7 @@ export const Demo = () => {
             </p>
           )}
 
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_auto_1fr_auto] sm:items-end">
+          <div className="mx-auto mt-4 w-full max-w-4xl grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto] md:items-end">
             <div>
               <label
                 htmlFor="demo-regra-pessoa-1"
